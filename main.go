@@ -22,6 +22,7 @@ var kubeState state
 
 func main() {
 	router := newRouter()
+	// TODO: should be stopped gracefully
 	http.ListenAndServe(":8080", router)
 }
 
