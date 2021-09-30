@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -50,6 +51,37 @@ func TestHandlers(t *testing.T) {
 		if body != scenario.expectedBody {
 			t.Errorf("'%s' returned unexpected body: got %v want %v",
 				getHandlerName(scenario.handler), body, scenario.expectedBody,
+			)
+		}
+	}
+}
+
+func TestRoutings(t *testing.T) {
+	router := newRouter()
+	mockedServer := httptest.NewServer(router)
+
+	for _, scenario := range expectedScenarios {
+		resp, err := http.Get(mockedServer.URL + scenario.endpoint)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if resp.StatusCode != scenario.expectedStatusCode {
+			t.Errorf("Endpoint '%s' returned wrong status code: got %v want %v",
+				scenario.endpoint, resp.StatusCode, scenario.expectedStatusCode,
+			)
+		}
+
+		defer resp.Body.Close()
+		b, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		body := string(b)
+		if body != scenario.expectedBody {
+			t.Errorf("Endpoint '%s' returned unexpected body: got %v want %v",
+				scenario.endpoint, body, scenario.expectedBody,
 			)
 		}
 	}
